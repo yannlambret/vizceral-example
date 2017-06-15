@@ -8,7 +8,6 @@ import Vizceral from 'vizceral-react';
 import 'vizceral-react/dist/vizceral.css';
 import keypress from 'keypress.js';
 import queryString from 'query-string';
-import request from 'superagent';
 
 import './trafficFlow.css';
 import Breadcrumbs from './breadcrumbs';
@@ -36,6 +35,9 @@ function animate (time) {
 requestAnimationFrame(animate);
 
 const panelWidth = 400;
+
+// Web socket to handle traffic data
+const ws = new WebSocket('ws://localhost:9090/ws');
 
 class TrafficFlow extends React.Component {
   constructor (props) {
@@ -91,6 +93,11 @@ class TrafficFlow extends React.Component {
         this.setState({ currentView: this.state.currentView.slice(0, -1) });
       }
     });
+
+    // Handle data received from backend
+    ws.onmessage = (event) => {
+      this.beginSampleData(JSON.parse(event.data));
+    };
   }
 
   handlePopState () {
@@ -148,16 +155,11 @@ class TrafficFlow extends React.Component {
     this.setState({ currentView: currentView, objectToHighlight: parsedQuery.highlighted });
   }
 
-  beginSampleData () {
-    this.traffic = { nodes: [], connections: [] };
-    request.get('sample_data.json')
-      .set('Accept', 'application/json')
-      .end((err, res) => {
-        if (res && res.status === 200) {
-          this.traffic.clientUpdateTime = Date.now();
-          this.updateData(res.body);
-        }
-      });
+  beginSampleData (data) {
+    if (typeof (data) !== 'undefined' && data !== null) {
+      data.clientUpdateTime = Date.now();
+      this.updateData(data);
+    }
   }
 
   componentDidMount () {
