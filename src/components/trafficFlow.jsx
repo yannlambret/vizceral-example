@@ -172,6 +172,7 @@ class TrafficFlow extends React.Component {
 
   componentWillUnmount () {
     filterStore.removeChangeListener(this.filtersChanged);
+    ws.close();
   }
 
   shouldComponentUpdate (nextProps, nextState) {
