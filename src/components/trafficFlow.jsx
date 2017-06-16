@@ -96,7 +96,7 @@ class TrafficFlow extends React.Component {
 
     // Handle data received from backend
     ws.onmessage = (event) => {
-      this.beginSampleData(JSON.parse(event.data));
+      this.beginSampleData(JSON.parse(event.data ? event.data : null));
     };
   }
 
